@@ -11,11 +11,7 @@
 ```
 
 ### Considerations
-- Coordinate Encoding Codec
-    * Hilbert
-    * Geohash
-    * H3
-    * S2
+- Coordinate Encoding Codec: Geohash using Hilbert Curves
 - Integer Compression Codec
     * LEB128
     * Streamvbyte
@@ -32,6 +28,7 @@ MAGIC
 COORDINATE COUNT
 PROPERTIES COUNT
 PROPERTIES NAMES (array of null-terminated strings)
+PROPERTIES TYPES (array of enumerators)
 
 !!! Offsets
 COORDINATES OFFSET

@@ -8,12 +8,25 @@ using std::vector;
 
 namespace flatpoints {
 
+enum Type
+{
+    INT32   = 1,
+    INT64   = 2,
+    UINT32  = 3,
+    UINT64  = 4,
+    FLOAT32 = 5,
+    FLOAT64 = 6,
+    STRING  = 7,
+    BOOL    = 8
+};
+
 struct Header
 {
     uint64_t         coordinates_count;
     uint64_t         properties_count;
-    vector<uint64_t> offsets;
     vector<string>   properties_names;
+    vector<Type>     properties_types;
+    vector<uint64_t> offsets;
 
     /**
      */
@@ -26,6 +39,11 @@ struct Header
         this->offsets = vector<uint64_t>(this->properties_count + 1);
         for (size_t i = 0; i < this->properties_count + 1; ++i) {
             file.read(reinterpret_cast<char*>(&(this->offsets[i])), 8);
+        }
+
+        this->properties_types = vector<Type>(this->properties_count);
+        for (size_t i = 0; i < this->properties_count; ++i) {
+            file.read(reinterpret_cast<char*>(&(this->properties_types[i])), 1);
         }
 
         this->properties_names = vector<string>(this->properties_count);
@@ -42,10 +60,19 @@ struct Header
         file.seekp(0, std::ios::beg);
         file.write(reinterpret_cast<char*>(&(this->coordinates_count)), 8);
         file.write(reinterpret_cast<char*>(&(this->properties_count)), 8);
+        bytes_written += 16;
 
         for (size_t i = 0; i < this->properties_count + 1; ++i) {
             file.write(reinterpret_cast<char*>(&(this->offsets[i])), 8);
         }
+        bytes_written += (this->properties_count + 1) * 8;
+
+        for (size_t i = 0; i < this->properties_count; ++i) {
+            file.write(
+              reinterpret_cast<char*>(&(this->properties_types[i])), 1
+            );
+        }
+        bytes_written += this->properties_count;
 
         for (size_t i = 0; i < this->properties_count; ++i) {
             size_t strlen = this->properties_names[i].size() + 1;
@@ -53,7 +80,7 @@ struct Header
             bytes_written += strlen;
         }
 
-        return ((8 * this->properties_count + 3) + bytes_written);
+        return bytes_written;
     };
 };
 
