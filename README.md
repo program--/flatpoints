@@ -1,44 +1,18 @@
-# Schema
+# flatpoints
 
-```
-{
-    "points": [], # 64-bit Integer Array
-    "properties": {
-        "index": {...}
-        "dictionary": {...}
-    }
-}
-```
+**flatpoints** is an in-development data format for representing coordinates, particularly [*points of interest*](https://en.wikipedia.org/wiki/Point_of_interest), as a compressed list of integers (i.e. an [inverted list](https://en.wikipedia.org/wiki/Inverted_index)).
 
-### Considerations
+## Format
+
+![](docs/img/format.svg)
+
+## Braindumping
+
 - Coordinate Encoding Codec: Geohash using Hilbert Curves
-- Integer Compression Codec
-    * LEB128
-    * Streamvbyte
-- Properties Compression
-    * Dictionary
-    * RLE
-    * Parquet-based?
+- Integer Compression Codec: VTEnc
+- Properties Compression: TBD
 
-
-```
-MAGIC
-
-!! Header
-COORDINATE COUNT
-PROPERTIES COUNT
-PROPERTIES NAMES (array of null-terminated strings)
-PROPERTIES TYPES (array of enumerators)
-
-!!! Offsets
-COORDINATES OFFSET
-PROPERTY 1 OFFSET
-PROPERTY 2 OFFSET
-PROPERTY 3 OFFSET
-
-!! Data
-COORDINATE BYTES
-PROPERTY 1 BYTES
-PROPERTY 2 BYTES
-PROPERTY 3 BYTES
-```
+## References
+- Giulio Ermanno Pibiri, Rossano Venturini (2019). "Techniques for Inverted Index Compression." [arXiv:1908.10598v2](https://arxiv.org/abs/1908.10598v2).
+- Vicente Romera Calero (2022). "VTEnc". [GitHub Repository](https://github.com/vteromero/VTEnc).
+- Vukovic, Tibor (2016). "Hilbert-Geohash - Hashing Geographical Point Data Using the Hilbert Space-Filling Curve."

@@ -1,0 +1,6 @@
+---
+title: "flatpoints: a compressed inverted list representation of points of interest"
+date: 10/9/2022
+author: Justin Singh-Mohudpur
+format: html
+---
