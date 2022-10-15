@@ -45,6 +45,7 @@ struct property
 
 struct header
 {
+    uint64_t         start_of_data;
     uint64_t         coordinates_count;
     uint64_t         properties_count;
     vector<string>   properties_names;
@@ -55,7 +56,17 @@ struct header
      */
     void read(std::ifstream& file)
     {
+        char magic[3];
         file.seekg(0, std::ios::beg);
+
+        file.read(reinterpret_cast<char*>(&(magic[0])), 1);
+        file.read(reinterpret_cast<char*>(&(magic[1])), 1);
+        file.read(reinterpret_cast<char*>(&(magic[2])), 1);
+        if (magic[0] != 'F' && magic[1] != 'P' && magic[2] != 'S') {
+            file.close();
+            throw "Magic number not correct";
+        }
+
         file.read(reinterpret_cast<char*>(&(this->coordinates_count)), 8);
         file.read(reinterpret_cast<char*>(&(this->properties_count)), 8);
 
@@ -81,6 +92,13 @@ struct header
     {
         size_t bytes_written = 0;
         file.seekp(0, std::ios::beg);
+
+        // Magic
+        file.write(0x46, 1);
+        file.write(0x50, 1);
+        file.write(0x53, 1);
+        bytes_written += 3;
+
         file.write(reinterpret_cast<char*>(&(this->coordinates_count)), 8);
         file.write(reinterpret_cast<char*>(&(this->properties_count)), 8);
         bytes_written += 16;
