@@ -1,19 +1,19 @@
 PROJ = flatpoints
+BASE_DIR = cpp
 INC_DIR = include
+EXT_DIR = extern
 SRC = tests/main.cpp
-
 FLAGS = -std=c++11 -Wall -O2
-
-EXE = $(PROJ).out
+BIN = $(PROJ).out
 
 build:
-	g++ $(FLAGS) -I$(INC_DIR) $(SRC) -o $(EXE)
+	g++ $(FLAGS) -I$(INC_DIR) -I$(EXT_DIR) $(SRC) -o $(BIN)
 
 run: build
-	./$(EXE)
+	./$(BIN)
 
 clean:
-	rm $(EXE)
+	rm $(BIN)
 	rm data/test_header.flatpoints
 
 test: run clean

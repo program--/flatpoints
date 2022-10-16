@@ -1,14 +1,13 @@
-#include <fstream>
 #define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-
-#include "points.hpp"
+#include "catch/catch.hpp"
+#include "common.hpp"
 
 flatpoints::header test_header;
 string             path = "data/test_header.flatpoints";
 
 TEST_CASE("Read/Write Header")
 {
+    uint64_t       val_sd = 5115;
     uint64_t       val_cc = 472;
     uint64_t       val_pc = 6;
     vector<string> val_pn{
@@ -21,6 +20,7 @@ TEST_CASE("Read/Write Header")
     };
     vector<uint64_t> val_of{ 3, 29, 353, 2834, 29343, 48505, 95864 };
 
+    test_header.start_of_data     = val_sd;
     test_header.coordinates_count = val_cc;
     test_header.properties_count  = val_pc;
     test_header.properties_names  = val_pn;
@@ -37,6 +37,7 @@ TEST_CASE("Read/Write Header")
     test_header = flatpoints::header();
     test_header.read(ifile);
 
+    REQUIRE(test_header.start_of_data == val_sd);
     REQUIRE(test_header.coordinates_count == val_cc);
     REQUIRE(test_header.properties_count == val_pc);
     for (size_t i = 0; i < 6; ++i) {

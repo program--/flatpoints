@@ -1,0 +1,4 @@
+[submodule "cpp/extern/vtenc"]
+	path = cpp/extern/vtenc
+	url = https://github.com/vteromero/VTEnc
+	branch = v0.3.0

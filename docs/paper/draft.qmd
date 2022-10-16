@@ -4,3 +4,19 @@ date: 10/9/2022
 author: Justin Singh-Mohudpur
 format: html
 ---
+
+# Introduction
+
+# Data Format
+
+## Compression Techniques
+
+## Offset Usage
+
+# Experiments
+
+(compare to other data formats, read/write/size/etc)
+
+# Results
+
+# Conclusion
