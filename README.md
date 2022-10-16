@@ -2,6 +2,8 @@
 
 **flatpoints** is an in-development data format for representing coordinates, particularly [*points of interest*](https://en.wikipedia.org/wiki/Point_of_interest), as a compressed list of integers (i.e. an [inverted list](https://en.wikipedia.org/wiki/Inverted_index)).
 
+> **Note**: this library is currently in active development, so its API and the underlying data format are subject to change at any moment.
+
 ## Format
 
 ![](docs/img/format.svg)
