@@ -2,8 +2,8 @@
 #include "catch/catch.hpp"
 #include "common.hpp"
 
-flatpoints::header test_header;
-string             path = "data/test_header.flatpoints";
+flatpoints::common::header test_header;
+string                     path = "data/test_header.flatpoints";
 
 TEST_CASE("Read/Write Header")
 {
@@ -13,10 +13,10 @@ TEST_CASE("Read/Write Header")
     vector<string> val_pn{
         "prop1", "prop2", "prop3", "prop4", "prop5", "prop6"
     };
-    vector<flatpoints::type> val_ty{
-        flatpoints::type::INT64, flatpoints::type::STRING,
-        flatpoints::type::BOOL,  flatpoints::type::INT64,
-        flatpoints::type::INT32, flatpoints::type::UINT64
+    vector<flatpoints::common::type> val_ty{
+        flatpoints::common::type::INT64, flatpoints::common::type::STRING,
+        flatpoints::common::type::BOOL,  flatpoints::common::type::INT64,
+        flatpoints::common::type::INT32, flatpoints::common::type::UINT64
     };
     vector<uint64_t> val_of{ 3, 29, 353, 2834, 29343, 48505, 95864 };
 
@@ -34,7 +34,7 @@ TEST_CASE("Read/Write Header")
 
     std::ifstream ifile;
     ifile.open(path, std::ios::binary);
-    test_header = flatpoints::header();
+    test_header = flatpoints::common::header();
     test_header.read(ifile);
 
     REQUIRE(test_header.start_of_data == val_sd);
