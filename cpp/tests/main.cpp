@@ -3,7 +3,7 @@
 #include "common.hpp"
 
 flatpoints::common::header test_header;
-string                     path = "data/test_header.flatpoints";
+string                     path = "../data/test_header.flatpoints";
 
 TEST_CASE("Read/Write Header")
 {

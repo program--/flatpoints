@@ -10,11 +10,16 @@
 
 ## Braindumping
 
-- Coordinate Encoding Codec: Geohash using Hilbert Curves
-- Integer Compression Codec: VTEnc
+- Coordinate Encoding Codec: Geohash using Hilbert Curves or Hilbert Indexing (Allow for other encodings in later implementations)
+- Integer Compression Codec: VTEnc OR LEB128 (Allow for other encodings in later implementations)
 - Properties Compression: TBD
 
 ## References
 - Giulio Ermanno Pibiri, Rossano Venturini (2019). "Techniques for Inverted Index Compression." [arXiv:1908.10598v2](https://arxiv.org/abs/1908.10598v2).
 - Vicente Romera Calero (2022). "VTEnc". [GitHub Repository](https://github.com/vteromero/VTEnc).
 - Vukovic, Tibor (2016). "Hilbert-Geohash - Hashing Geographical Point Data Using the Hilbert Space-Filling Curve."
+
+## License
+
+The reference implementation of flatpoints is licensed under APLv2.
+The format specification for the flatpoints data format is public domain (or under a CC0 license as applicable).
