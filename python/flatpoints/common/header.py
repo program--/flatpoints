@@ -1,10 +1,10 @@
 class Header:
-    start_of_data: int
-    coordinates_count: int
-    properties_count: int
-    properties_names: list[str]
-    properties_types: list[int]
-    offsets: list[int]
+    start_of_data: int = -1
+    coordinates_count: int = -1
+    properties_count: int = -1
+    properties_names: list[str] = []
+    properties_types: list[int] = []
+    offsets: list[int] = []
 
     def __init__(self, filepath: str = ""):
         if (filepath != ""):
@@ -13,11 +13,11 @@ class Header:
     def __str__(self):
         return f'''--------- FLATPOINTS ---------
 {self.coordinates_count} Coordinates
-{self.properties_count} Properties {self.properties_names}
+{self.properties_count} Properties {self.properties_names.__str__()[:30]}...
 - METADATA:
     * SOD: {self.start_of_data}
     * Offsets: {self.offsets}
-    * Types: {self.properties_types}
+    * Types: {self.properties_types.__str__()[:30]}...
 ------------------------------'''
 
     def read(self, filepath: str):
