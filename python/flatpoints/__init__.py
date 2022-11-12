@@ -4,6 +4,8 @@ from flatpoints.util import compression
 from operator import sub
 from itertools import starmap, islice
 import json
+import struct
+import gzip
 
 # TODO: Get bytesize of properties
 # TODO: Calculate SOD / Offsets
@@ -39,6 +41,7 @@ class flatpoints():
         self.header.coordinates_count = len(geojson)
         self._parse(geojson)
         self._init_header()
+        self.dumps()
 
     def __str__(self) -> str:
         # TODO
@@ -47,7 +50,7 @@ class flatpoints():
     def __len__(self) -> int:
         return self.header.coordinates_count
 
-    def __getitem__(self, key) -> flatpoints | dict['x': float, 'y': float, 'properties': dict]:
+    def __getitem__(self, key):
         if isinstance(key, int):
             x, y = hilbert.decode(
                 hilbert.MAX_N, [compression.leb128_decode(self.data)[key]], hilbert.WORLD)
@@ -80,6 +83,59 @@ class flatpoints():
                 'flatpoints indices must be integers or slices, not str')
 
         pass
+
+    # Public
+
+    def dumps(self) -> bytes:
+        ret = b''
+        prop_bytes = b''
+        current_offset = 1
+        for i in range(len(self.header.properties_names)):
+            prop_name = self.header.properties_names[i]
+            prop_type = self.header.properties_types[i]
+
+            if prop_type == 1:
+                _dumps = self._dumps_prop_int32
+            elif prop_type == 2:
+                _dumps = self._dumps_prop_int64
+            elif prop_type == 3:
+                _dumps = self._dumps_prop_uint32
+            elif prop_type == 4:
+                _dumps = self._dumps_prop_uint64
+            elif prop_type == 5:
+                _dumps = self._dumps_prop_float32
+            elif prop_type == 6:
+                _dumps = self._dumps_prop_float64
+            elif prop_type == 7:
+                _dumps = self._dumps_prop_str
+            elif prop_type == 8:
+                _dumps = self._dumps_prop_bool
+            else:
+                raise TypeError(
+                    f'Failed to interpret property {prop_name} type')
+
+            current_bytes = _dumps(self.properties[prop_name])
+            current_bytes = gzip.compress(current_bytes, 6)
+            self.header.offsets.append(current_offset)
+            current_offset += len(current_bytes)
+            prop_bytes += current_bytes
+
+        header_size = len(self.header)
+        coords_size = len(self.data)
+        self.header.start_of_data = header_size + 1
+        self.header.offsets = [offset + header_size +
+                               coords_size for offset in self.header.offsets]
+
+        ret += self.header.dumps()
+        ret += self.data
+        ret += prop_bytes
+        return ret
+
+    def dump(self, filepath: str) -> int:
+        bytes_written = 0
+        with open(filepath, 'wb') as file:
+            bytes_written = file.write(self.dumps())
+        return bytes_written
 
     # Private
 
@@ -140,27 +196,26 @@ class flatpoints():
     def _dumps_prop_str(self, prop: list[str]) -> bytes:
         return b''.join([f'{x}\0'.encode('utf-8') for x in prop])
 
-    def _dumps_prop_intX(self, prop: list[int], length: int, signed: bool):
-        return b''.join([x.to_bytes(length, 'little', signed) for x in prop])
+    def _dumps_prop_c(self, format: str, prop: list[any]) -> bytes:
+        return struct.pack(f'={len(prop)}{format}', *prop)
 
     def _dumps_prop_int64(self, prop: list[int]) -> bytes:
-        return self._dumps_prop_intX(prop, 8, True)
+        return self._dumps_prop_c('q', prop)
 
     def _dumps_prop_int32(self, prop: list[int]) -> bytes:
-        return self._dumps_prop_intX(prop, 4, True)
+        return self._dumps_prop_c('l', prop)
 
     def _dumps_prop_uint64(self, prop: list[int]) -> bytes:
-        return self._dumps_prop_intX(prop, 8, False)
+        return self._dumps_prop_c('Q', prop)
 
     def _dumps_prop_uint32(self, prop: list[int]) -> bytes:
-        return self._dumps_prop_intX(prop, 4, False)
+        return self._dumps_prop_c('L', prop)
 
     def _dumps_prop_bool(self, prop: list[bool]) -> bytes:
-        # TODO: Handle NULL case
-        return self._dumps_prop_intX(prop, 1, False)
+        return self._dumps_prop_c('?', prop)
 
     def _dumps_prop_float32(self, prop: list[float]) -> bytes:
-        pass
+        return self._dumps_prop_c('f', prop)
 
     def _dumps_prop_float64(self, prop: list[float]) -> bytes:
-        pass
+        return self._dumps_prop_c('d', prop)

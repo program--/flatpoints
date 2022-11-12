@@ -1,7 +1,10 @@
+from io import BytesIO
+
+
 class Header:
-    start_of_data: int = -1
-    coordinates_count: int = -1
-    properties_count: int = -1
+    start_of_data: int = 0
+    coordinates_count: int = 0
+    properties_count: int = 0
     properties_names: list[str] = []
     properties_types: list[int] = []
     offsets: list[int] = []
@@ -20,7 +23,48 @@ class Header:
     * Types: {self.properties_types.__str__()[:30]}...
 ------------------------------'''
 
-    def read(self, filepath: str):
+    def __len__(self):
+        ns = b''.join([f'{name}\0'.encode() for name in self.properties_names])
+        return (8 * 3) + len(ns) + len(self.properties_types) + (len(self.offsets) * 8)
+
+    def loads(self, data: bytes):
+        stream = BytesIO(data)
+
+        magic = stream.read(3).decode('utf-8')
+        if (magic != 'FPS'):
+            raise Exception(f"data is not in flatpoints format")
+
+        self.start_of_data = int.from_bytes(
+            stream.read(8), 'little', signed=False)
+        self.coordinates_count = int.from_bytes(
+            stream.read(8), 'little', signed=False)
+        self.properties_count = int.from_bytes(
+            stream.read(8), 'little', signed=False)
+
+        print(f"""
+SOD: {self.start_of_data}
+COORDS: {self.coordinates_count}
+PROPS: {self.properties_count}
+""")
+
+        self.offsets = [int.from_bytes(stream.read(
+            8), 'little', signed=False) for _ in range(self.properties_count)]
+        self.properties_types = [int.from_bytes(
+            stream.read(1), 'little', signed=False) for _ in range(self.properties_count)]
+
+        self.properties_names = []
+        nulls = 0
+        while nulls != self.properties_count:
+            c = stream.read(1).decode('utf-8')
+            print(c)
+            nulls += 1 if c == chr(0) else 0
+            self.properties_names.append(c)
+        self.properties_names = "".join(
+            self.properties_names).split(chr(0))
+
+        self.properties_names.pop()
+
+    def load(self, filepath: str):
         with open(filepath, 'rb') as file:
             magic = file.read(3).decode('utf-8')
             if (magic != 'FPS'):
@@ -34,7 +78,7 @@ class Header:
                 file.read(8), 'little', signed=False)
 
             self.offsets = [int.from_bytes(file.read(
-                8), 'little', signed=False) for _ in range(self.properties_count + 1)]
+                8), 'little', signed=False) for _ in range(self.properties_count)]
             self.properties_types = [int.from_bytes(
                 file.read(1), 'little', signed=False) for _ in range(self.properties_count)]
 
@@ -49,26 +93,25 @@ class Header:
 
             self.properties_names.pop()
 
-    def write(self, filepath: str) -> int:
+    def dumps(self) -> bytes:
+        ret = b'FPS'
+        ret += self.start_of_data.to_bytes(8, 'little', signed=False)
+        ret += self.coordinates_count.to_bytes(8, 'little', signed=False)
+        ret += self.properties_count.to_bytes(8, 'little', signed=False)
+
+        for offset in self.offsets:
+            ret += offset.to_bytes(8, 'little', signed=False)
+
+        for ptype in self.properties_types:
+            ret += ptype.to_bytes(1, 'little', signed=False)
+
+        for name in self.properties_names:
+            ret += f'{name}\0'.encode()
+
+        return ret
+
+    def dump(self, filepath: str) -> int:
         bytes_written = 0
-
         with open(filepath, 'wb') as file:
-            bytes_written += file.write(b'FPS')
-
-            bytes_written += file.write(self.start_of_data.to_bytes(8,
-                                        'little', signed=False))
-            bytes_written += file.write(self.coordinates_count.to_bytes(
-                8, 'little', signed=False))
-            bytes_written += file.write(self.properties_count.to_bytes(
-                8, 'little', signed=False))
-
-            for offset in self.offsets:
-                bytes_written += file.write(offset.to_bytes(8, 'little'))
-
-            for ptype in self.properties_types:
-                bytes_written += file.write(ptype.to_bytes(1, 'little'))
-
-            for name in self.properties_names:
-                bytes_written += file.write(f'{name}\0'.encode())
-
+            bytes_written = file.write(self.dumps())
         return bytes_written
