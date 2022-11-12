@@ -6,7 +6,24 @@
 
 ## Format
 
-![](docs/img/format.svg)
+| Description          | Bytes
+| -------------------- | ------
+| Magic Number         | 3 Bytes
+| Start of Data (S)    | 8 Bytes
+| Coordinate Count (N) | 8 Bytes
+| Properties Count     | 8 Bytes
+| Property Types       | 8 * N Bytes
+| Property Names       | ((8 * (N + 3) + 3) - S) Bytes
+| Coordinate Offset    | 8 Bytes
+| Property 1 Offset    | 8 Bytes
+| Property 2 Offset    | 8 Bytes
+| ...                  | ...
+| Property N Offset    | 8 Bytes
+| Coordinate Data      |
+| Property 1 Data      |
+| Property 2 Data      |
+| ...                  |
+| Property N Data      |
 
 ## Braindumping
 
