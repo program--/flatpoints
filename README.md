@@ -6,24 +6,24 @@
 
 ## Format
 
-| Description          | Bytes
-| -------------------- | ------
-| Magic Number         | 3 Bytes
-| Start of Data (S)    | 8 Bytes
-| Coordinate Count (N) | 8 Bytes
-| Properties Count     | 8 Bytes
-| Property Types       | 8 * N Bytes
-| Property Names       | ((8 * (N + 3) + 3) - S) Bytes
-| Coordinate Offset    | 8 Bytes
-| Property 1 Offset    | 8 Bytes
-| Property 2 Offset    | 8 Bytes
-| ...                  | ...
-| Property N Offset    | 8 Bytes
-| Coordinate Data      |
-| Property 1 Data      |
-| Property 2 Data      |
-| ...                  |
-| Property N Data      |
+Section             | Description          | Bytes
+------------------- | -------------------- | ------
+Header (Attributes) | Magic Number         | 3 Bytes
+Header (Attributes) | Start of Data (S)    | 8 Bytes
+Header (Attributes) | Coordinate Count (N) | 8 Bytes
+Header (Attributes) | Properties Count     | 8 Bytes
+Header (Attributes) | Property Types       | N Bytes
+Header (Attributes) | Property Names       | ((8 * (N + 3) + 3) - S) Bytes
+Header (Offsets)    | Coordinate Offset    | 8 Bytes
+Header (Offsets)    | Property 1 Offset    | 8 Bytes
+Header (Offsets)    | Property 2 Offset    | 8 Bytes
+Header (Offsets)    | ...                  | ...
+Header (Offsets)    | Property N Offset    | 8 Bytes
+Data                | Coordinate Data      |
+Data                | Property 1 Data      |
+Data                | Property 2 Data      |
+Data                | ...                  |
+Data                | Property N Data      |
 
 ## Braindumping
 
