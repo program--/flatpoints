@@ -6,30 +6,40 @@
 
 ## Format
 
-Section             | Description          | Bytes
-------------------- | -------------------- | ------
-Header (Attributes) | Magic Number         | 3 Bytes
-Header (Attributes) | Start of Data (S)    | 8 Bytes
-Header (Attributes) | Coordinate Count (N) | 8 Bytes
-Header (Attributes) | Properties Count     | 8 Bytes
-Header (Attributes) | Property Types       | N Bytes
-Header (Attributes) | Property Names       | ((8 * (N + 3) + 3) - S) Bytes
-Header (Offsets)    | Coordinate Offset    | 8 Bytes
-Header (Offsets)    | Property 1 Offset    | 8 Bytes
-Header (Offsets)    | Property 2 Offset    | 8 Bytes
-Header (Offsets)    | ...                  | ...
-Header (Offsets)    | Property N Offset    | 8 Bytes
-Data                | Coordinate Data      |
-Data                | Property 1 Data      |
-Data                | Property 2 Data      |
-Data                | ...                  |
-Data                | Property N Data      |
+Section | Description          | Bytes
+------- | -------------------- | ------
+Header  | Magic Number         | 3 Bytes
+Header  | Start of Data (S)    | 8 Bytes
+Header  | Coordinate Count (N) | 8 Bytes
+Header  | Properties Count     | 8 Bytes
+Header  | Property Types       | N Bytes
+Header  | Property Names       | ((8 * (N + 3) + 3) - S) Bytes
+Header  | Property Offsets     | 8 * N Bytes
+Data    | Coordinate Data      |
+Data    | Property 1 Data      |
+Data    | Property 2 Data      |
+Data    | ...                  |
+Data    | Property N Data      |
 
 ## Braindumping
 
-- Coordinate Encoding Codec: Geohash using Hilbert Curves or Hilbert Indexing (Allow for other encodings in later implementations)
-- Integer Compression Codec: VTEnc OR LEB128 (Allow for other encodings in later implementations)
-- Properties Compression: TBD
+- Coordinate Encoding Codec: Sorted Hilbert Delta Indexing
+- Integer Compression Codec: LEB128
+- Properties Compression: Gzip
+
+> These codecs are defaults for now, the plan is to allow for other encodings in later implementations.
+
+The general idea for the *flatpoints* data format is to store point geometry in a small footprint, with cloud-native capabilities. The offset approach allows users to take advantage of [HTTP Range Requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests).
+
+Coordinates are first projected to 1D by gridding the coordinates using the world extent, then filling the space with a [Hilbert Curve](https://en.wikipedia.org/wiki/Hilbert_curve). Point positions are then associated along the curve to get an unsigned 64-bit integer representation. These integers (and the associated properties) are then sorted in ascending order, and [delta encoded](https://en.wikipedia.org/wiki/Delta_encoding). The resulting differences are then compressed using a codec of choice. In this case, they are compressed into LEB128 form. This encoding scheme is *slightly* lossy, but can be mitigated to be practically lossless by modifying the extent of the coordinate grid, and the number of iterations (exponent) for the Hilbert Curve. The defaults used (world extent with `N = 31`) are the maximums, and result in a (at most) ±1m margin of error in accuracy. This can be reduced to <±1cm margin of error in accuracy by reducing the extent to the coordinate's extent, but would require storing the extent to disk/in-memory.
+
+> See [spress](https://github.com/UFOKN/spress) for the basis of this idea.
+
+Reading the flatpoints format starts with a pre-flight request of reading the first 11 bytes, to ensure the file is a flatpoints file by the magic number, and to get the header size. The start of data (SOD) explicitly states the first (inclusive) position where the *coordinate data* starts, and implicitly gives the header size `(SOD - 1)`.
+
+A header request can then be made to get the entirety of the header.
+
+Coordinate data and the feature properties can be read independently of one another. So, if a user only requires the coordinates and property 1, then they can read only those byte ranges via the offsets & SOD.
 
 ## References
 - Giulio Ermanno Pibiri, Rossano Venturini (2019). "Techniques for Inverted Index Compression." [arXiv:1908.10598v2](https://arxiv.org/abs/1908.10598v2).
