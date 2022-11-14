@@ -2,7 +2,7 @@
 
 **flatpoints** is an in-development data format for representing coordinates, particularly [*points of interest*](https://en.wikipedia.org/wiki/Point_of_interest), as a compressed list of integers (i.e. an [inverted list](https://en.wikipedia.org/wiki/Inverted_index)).
 
-> **Note**: this library is currently in active development, so its API and the underlying data format are subject to change at any moment.
+> **Warning**: this library is currently in active development, so its API and the underlying data format are subject to change at any moment.
 
 ## Format
 
@@ -27,7 +27,7 @@ Data    | Property N Data      |
 - Integer Compression Codec: LEB128
 - Properties Compression: Gzip
 
-> These codecs are defaults for now, the plan is to allow for other encodings in later implementations.
+> **Note**: These codecs are defaults for now, the plan is to allow for other encodings in later implementations.
 
 The general idea for the *flatpoints* data format is to store point geometry in a small footprint, with cloud-native capabilities. The offset approach allows users to take advantage of [HTTP Range Requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests).
 
